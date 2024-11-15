@@ -3,89 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agenda de Tareas</title>
+    <title>Gestión de Tareas</title>
+    <!-- Estilos directamente en el archivo HTML -->
+    <style>
+        /* Reset de estilos básicos */
+        body, h1, h2, p, input, button, div, form {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            max-width: 90%;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        /* Contenedor de formularios */
+        .form-container {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+
+        /* Campos de entrada */
+        input {
+            width: 80%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: block;
+            margin: 10px auto;
+        }
+
+        /* Botones */
+        .button {
+            width: 50%;
+            padding: 10px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-    <h1>Agenda de Tareas</h1>
+    <div class="container">
+        <h1>Gestión de Tareas</h1>
+        
+        <!-- Formulario de Inicio de Sesión -->
+        <div class="form-container">
+            <h2>Iniciar Sesión</h2>
+            <form id="login-form">
+                <input type="text" id="username" placeholder="Nombre de usuario" required>
+                <input type="password" id="password" placeholder="Contraseña" required>
+                <button type="submit" class="button">Iniciar Sesión</button>
+            </form>
+        </div>
 
-    <!-- Registro de usuario -->
-    <h2>Registro</h2>
-    <form id="registerForm">
-        <label for="username">Nombre de usuario:</label>
-        <input type="text" id="username" placeholder="Nombre de usuario" required>
-        <br><br>
-
-        <label for="password">Contraseña:</label>
-        <input type="password" id="password" placeholder="Contraseña" required>
-        <br><br>
-
-        <label for="email">Correo electronico:</label>
-        <input type="email" id="email" placeholder="Correo electrónico" required>
-        <button type="submit">Registrarse</button>
-    </form>
-
-    <br><br>
+        <!-- Formulario de Registro -->
+        <div class="form-container">
+            <h2>Registro</h2>
+            <form id="register-form">
+                <input type="text" id="register-username" placeholder="Nombre de usuario" required>
+                <input type="email" id="register-email" placeholder="Correo electrónico" required>
+                <input type="password" id="register-password" placeholder="Contraseña" required>
+                <button type="submit" class="button">Registrarse</button>
+            </form>
+        </div>
+    </div>
     
-    <!-- Login de usuario -->
-    <h2>Iniciar Sesión</h2>
-    <form id="loginForm">
-        <label for="loginUsername">Nombre de usuario:</label>
-        <input type="text" id="loginUsername" placeholder="Nombre de usuario" required>
-        <br><br>
-
-        <label for="loginPassword">Contraseña:</label>
-        <input type="password" id="loginPassword" placeholder="Contraseña" required>
-        <button type="submit">Iniciar sesión</button>
-    </form>
-
+    <!-- Script directamente en el archivo HTML -->
     <script>
-        document.getElementById('registerForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const email = document.getElementById('email').value;
+        document.addEventListener('DOMContentLoaded', () => {
+            // Manejo del formulario de inicio de sesión
+            const loginForm = document.getElementById('login-form');
+            loginForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
 
-            const response = await fetch('/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, password, email }),
+                try {
+                    const response = await fetch('/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        alert('Inicio de sesión exitoso');
+                        // Guarda el token en el almacenamiento local para futuras peticiones
+                        localStorage.setItem('token', data.token);
+                        // Redirigir a la página de notas
+                        window.location.href = 'notas.html';
+                    } else {
+                        alert(data.message || 'Error en las credenciales');
+                    }
+                } catch (error) {
+                    console.error('Error al iniciar sesión:', error);
+                    alert('Hubo un error al iniciar sesión');
+                }
             });
 
-            const data = await response.json();
-            alert(data.message);
-            if (response.ok) {
-                document.getElementById('registerForm').reset();
-            }
-        });
+            // Manejo del formulario de registro
+            const registerForm = document.getElementById('register-form');
+            registerForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const username = document.getElementById('register-username').value;
+                const email = document.getElementById('register-email').value;
+                const password = document.getElementById('register-password').value;
 
-        document.getElementById('loginForm').addEventListener('submit', async function(event) {
-        event.preventDefault();
-            const username = document.getElementById('loginUsername').value;
-            const password = document.getElementById('loginPassword').value;
-
-            const response = await fetch('/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, password }),
+                try {
+                    const response = await fetch('/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, email, password })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        alert('Usuario registrado exitosamente');
+                        // Limpia los campos del formulario de registro
+                        registerForm.reset();
+                    } else {
+                        alert(data.message || 'Error al registrar usuario');
+                    }
+                } catch (error) {
+                    console.error('Error al registrar usuario:', error);
+                    alert('Hubo un error al registrar usuario');
+                }
             });
-
-            const data = await response.json();
-            alert(data.message); // Mostrar el mensaje de inicio de sesión
-
-            if (response.ok && data.token) {
-                alert(`Token: ${data.token}`);
-
-                localStorage.setItem('token', data.token); // guarda el token para ser utilizado en notas.html
-                window.location.href = 'notas.html';  // Redirigir a notas.html después de mostrar el mensaje
-
-            }
         });
-
     </script>
 </body>
 </html>
