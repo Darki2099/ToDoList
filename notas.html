@@ -3,261 +3,288 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Tareas</title>
-
-    <script>
-        const token = localStorage.getItem('token'); // AsegUra que el token esté almacenado
-
-        //Obtener las tareas
-        async function obtenerTareas() {
-            const response = await fetch('/tareas', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (response.ok) {
-                const tareas = await response.json();
-                mostrarTareasPendientes(tareas);
-            } else {
-                console.error('Error al obtener las tareas');
-            }
+    <title>Gestión de Tareas - Notas</title>
+    <!-- Estilos directamente en el archivo HTML -->
+    <style>
+        body, h1, h2, p, input, button, div, form, ul, li {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
         }
 
-        //Obtener tareas completadas
-        async function obtenerTareasCompletadas() {
-            const response = await fetch('/tareas/completadas', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (response.ok) {
-                const completadas = await response.json();
-                mostrarTareasCompletadas(completadas);
-            } else {
-                console.error('Error al obtener las tareas completadas');
-            }
+        body {
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
         }
 
-        // Mostrar tareas pendientes
-        function mostrarTareasPendientes(tareas) {
-            const tareasPendientesDiv = document.getElementById('tareasPendientes');
-            tareasPendientesDiv.innerHTML = ''; // Limpiar tareas existentes
-
-            tareas.forEach(tarea => {
-                const tareaDiv = document.createElement('div');
-                tareaDiv.innerHTML = `
-                    <strong>Titulo: ${tarea.titulo}</strong>
-                    <p>Descripcion: ${tarea.descripcion}</p>
-                    <p>Fecha: ${new Date(tarea.fecha).toLocaleDateString()}</p>
-                    <p>Estado: ${tarea.estado}</p>
-                    <button onclick="completarTarea(${tarea.id})">Completar</button>
-                    <button onclick="cargarTarea(${tarea.id}, '${tarea.titulo}', '${tarea.descripcion}', '${tarea.fecha}', '${tarea.estado}')">Actualizar</button>
-                    <button onclick="eliminarTarea(${tarea.id})">Eliminar</button>
-                    <hr>
-                `;
-                tareasPendientesDiv.appendChild(tareaDiv);
-            });
+        .container {
+            width: 800px;
+            max-width: 90%;
+            background-color: #fff;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
         }
 
-        // Mostrar tareas completadas en el formulario
-        function mostrarTareasCompletadas(tareas) {
-            const tareasCompletadasDiv = document.getElementById('tareasCompletadas');
-            tareasCompletadasDiv.innerHTML = ''; // Limpiar tareas existentes
-
-            tareas.forEach(tarea => {
-                const tareaDiv = document.createElement('div');
-                tareaDiv.innerHTML = `
-                    <strong>${tarea.titulo}</strong>
-                    <p>${tarea.descripcion}</p>
-                    <p>Fecha: ${new Date(tarea.fecha).toLocaleDateString()}</p>
-                    <p>Estado: Completada</p>
-                    <button onclick="eliminarTareaCompletada(${tarea.id})">Eliminar</button>
-                    <hr>
-                `;
-                tareasCompletadasDiv.appendChild(tareaDiv);
-            });
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
         }
 
-        //Agregar nueva tarea
-        async function agregarTarea() {
-            const titulo = document.getElementById('titulo').value;
-            const descripcion = document.getElementById('descripcion').value;
-            const fecha = document.getElementById('fecha').value;
-
-            const response = await fetch('/tareas', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ titulo, descripcion, fecha, estado: 'pendiente' })
-            });
-
-            if (response.ok) {
-                obtenerTareas(); // Actualizar la lista de tareas
-                document.getElementById('taskForm').reset(); // Limpiar el formulario
-            } else {
-                console.error('Error al agregar la tarea');
-            }
+        /* Formulario de Tareas */
+        .form-container {
+            background-color: #f4f4f4;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
 
-        // Editar tarea para actualizar
-        function cargarTarea(id, titulo, descripcion, fecha, estado) {
-            document.getElementById('titulo').value = titulo;
-            document.getElementById('descripcion').value = descripcion;
-            document.getElementById('fecha').value = fecha;
-            document.getElementById('estado').textContent = estado;
-            document.getElementById('tareaId').value = id; // Guardar el ID de la tarea en un campo oculto
+        .form-container h2 {
+            color: #555;
+            margin-bottom: 15px;
         }
 
-        //Actualizar tarea
-        async function actualizarTarea() {
-            const id = document.getElementById('tareaId').value;
-            const titulo = document.getElementById('titulo').value;
-            const descripcion = document.getElementById('descripcion').value;
-            const fecha = document.getElementById('fecha').value;
-
-            const response = await fetch(`/tareas/${id}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ titulo, descripcion, fecha, estado: 'pendiente' })
-            });
-
-            if (response.ok) {
-                obtenerTareas(); // Actualizar la lista de tareas
-                document.getElementById('taskForm').reset(); // Limpiar el formulario
-            } else {
-                console.error('Error al actualizar la tarea');
-            }
+        input[type="text"], input[type="date"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
 
-        //Completar tarea
-        async function completarTarea(id) {
-            const response = await fetch(`/tareas/completar/${id}`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                }
-            });
-
-            if (response.ok) {
-                obtenerTareas(); // Actualizar la lista de tareas
-            } else {
-                console.error('Error al completar la tarea');
-            }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: background-color 0.3s;
         }
 
-        // Eliminar tarea
-        async function eliminarTarea(id) {
-            const response = await fetch(`/tareas/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                }
-            });
-
-            if (response.ok) {
-                obtenerTareas(); 
-            } else {
-                console.error('Error al eliminar la tarea');
-            }
+        button:hover {
+            background-color: #0056b3;
         }
 
-        //Eliminar tarea completada
-        async function eliminarTareaCompletada(id) {
-            const response = await fetch(`/completadas/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                }
-            });
-
-            if (response.ok) {
-                obtenerTareasCompletadas(); // Actualizar la lista de tareas completadas
-            } else {
-                console.error('Error al eliminar la tarea completada');
-            }
+        /* Lista de Tareas */
+        .task-list {
+            margin-top: 20px;
         }
 
-        function cerrarSesion() {
-            const token = localStorage.getItem('token');
-            if (token) {
-                fetch('/logout', {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
-                .then(response => {
-                    if (response.ok) {
-                        console.log("Sesión cerrada exitosamente.");
-                    } else {
-                        console.error("Error al cerrar sesión:", response.statusText);
-                    }
-                    // Redirigir al usuario independientemente del resultado de la solicitud
-                    localStorage.removeItem('token'); // Eliminar el token del almacenamiento local
-                    window.location.href = '/'; // Redirigir al inicio de sesión
-                })
-                .catch(error => {
-                    console.error('Error en la solicitud de cierre de sesión:', error);
-                    localStorage.removeItem('token'); // Eliminar el token del almacenamiento local
-                    window.location.href = '/'; // Redirigir al inicio de sesión
-                });
-            } else {
-                // Si no hay token, redirige directamente
-                window.location.href = '/';
-            }
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
         }
 
-        // Llamar a obtenerTareas y obtenerTareasCompletadas al cargar la página
-        window.onload = () => {
-            obtenerTareas();
-            obtenerTareasCompletadas();
-        };
-    </script>
+        .task-item.completed {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+
+        .task-title {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .task-actions button {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+
+        /* Sección de tareas completadas */
+        .completed-section {
+            margin-top: 30px;
+        }
+
+        .completed-section h2 {
+            color: #555;
+            margin-bottom: 15px;
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <h1>Gestión de Tareas</h1>
 
-    <button type="button" onclick="cerrarSesion()">Cerrar Sesion</button>
+        <!-- Formulario para agregar tareas -->
+        <div class="form-container">
+            <h2>Agregar Nueva Tarea</h2>
+            <form id="task-form">
+                <input type="text" id="task-title" placeholder="Título de la tarea" required>
+                <input type="text" id="task-description" placeholder="Descripción de la tarea" required>
+                <input type="date" id="task-date" required>
+                <button type="submit">Agregar Tarea</button>
+            </form>
+        </div>
 
-    <h1>AGENDA DE TAREAS</h1>
+        <!-- Lista de tareas -->
+        <div class="task-list">
+            <h2>Tareas Pendientes</h2>
+            <ul id="pending-tasks">
+                <!-- Aquí se insertarán las tareas pendientes -->
+            </ul>
+        </div>
 
-    <h2>Agregar Nueva Tarea</h2>
+        <!-- Sección de tareas completadas -->
+        <div class="completed-section">
+            <h2>Tareas Completadas</h2>
+            <ul id="completed-tasks">
+                <!-- Aquí se insertarán las tareas completadas -->
+            </ul>
+        </div>
+    </div>
 
-    <form  id="taskForm" onsubmit="event.preventDefault(); agregarTarea();">
-        <input type="hidden" id="tareaId"> <!-- Campo oculto para el ID de la tarea -->
-       
-        <label for="titulo">Título:</label>
-        <input type="text" id="titulo" n22ame="titulo" required>
-        <br><br>
+    <!-- Script directamente en el archivo HTML -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const taskForm = document.getElementById('task-form');
+            const pendingTasks = document.getElementById('pending-tasks');
+            const completedTasks = document.getElementById('completed-tasks');
+            const token = localStorage.getItem('token');
 
-        <label for="descripcion">Descripción:</label>
-        <br>
-        <textarea id="descripcion" name="descripcion" required cols="80" rows="5"></textarea>
-        <br><br>
+            // Verificar si el token existe
+            if (!token) {
+                alert('Debes iniciar sesión primero.');
+                window.location.href = 'index.html';
+            }
 
-        <label for="fecha">Fecha de Creación:</label>
-        <input type="date" id="fecha" name="fecha" required>
-        <br><br>
+            // Función para obtener tareas pendientes del servidor
+            const fetchPendingTasks = async () => {
+                try {
+                    const response = await fetch('/tareas', {
+                        method: 'GET',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const tasks = await response.json();
+                    renderTasks(tasks, pendingTasks);
+                } catch (error) {
+                    console.error('Error al obtener tareas pendientes:', error);
+                }
+            };
 
-        <label>Estado:</label>
-        <span id="estado">Pendiente</span>
-        <br><br>
+            // Función para obtener tareas completadas del servidor
+            const fetchCompletedTasks = async () => {
+                try {
+                    const response = await fetch('/tareas/completadas', {
+                        method: 'GET',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const tasks = await response.json();
+                    renderTasks(tasks, completedTasks, true);
+                } catch (error) {
+                    console.error('Error al obtener tareas completadas:', error);
+                }
+            };
 
-        <button type="submit">Agregar Tarea</button>
-        <button type="button" onclick="actualizarTarea()">Actualizar Tarea</button>
-     
-    </form>
+            // Función para mostrar tareas en la lista
+            const renderTasks = (tasks, container, completed = false) => {
+                container.innerHTML = ''; // Limpiar la lista
+                tasks.forEach(task => {
+                    const taskItem = document.createElement('li');
+                    taskItem.classList.add('task-item');
+                    if (completed) taskItem.classList.add('completed');
+                    taskItem.innerHTML = `
+                        <span class="task-title">${task.titulo} - ${task.descripcion} - ${task.fecha}</span>
+                        <div class="task-actions">
+                            ${!completed ? `<button onclick="completeTask(${task.id})">Completar</button>` : ''}
+                            <button onclick="deleteTask(${task.id}, ${completed})">Eliminar</button>
+                        </div>
+                    `;
+                    container.appendChild(taskItem);
+                });
+            };
 
-    <h2>Tareas Pendientes</h2>
-    <div id="tareasPendientes"></div>
+            // Función para agregar una tarea nueva
+            taskForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const title = document.getElementById('task-title').value;
+                const description = document.getElementById('task-description').value;
+                const date = document.getElementById('task-date').value;
 
-    <h2>Tareas Completadas</h2>
-    <div id="tareasCompletadas"></div>
+                try {
+                    const response = await fetch('/tareas', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ titulo: title, descripcion: description, fecha: date, estado: 'Pendiente' })
+                    });
+                    if (response.ok) {
+                        taskForm.reset();
+                        fetchPendingTasks(); // Actualizar lista de tareas pendientes
+                    } else {
+                        const data = await response.json();
+                        alert(data.message || 'Error al agregar la tarea');
+                    }
+                } catch (error) {
+                    console.error('Error al agregar tarea:', error);
+                }
+            });
+
+            // Función para completar una tarea
+            window.completeTask = async (taskId) => {
+                try {
+                    const response = await fetch(`/tareas/completar/${taskId}`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        fetchPendingTasks();
+                        fetchCompletedTasks();
+                    } else {
+                        alert('Error al completar la tarea');
+                    }
+                } catch (error) {
+                    console.error('Error al completar la tarea:', error);
+                }
+            };
+
+            // Función para eliminar una tarea (pendiente o completada)
+            window.deleteTask = async (taskId, completed = false) => {
+                const endpoint = completed ? `/completadas/${taskId}` : `/tareas/${taskId}`;
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        if (completed) {
+                            fetchCompletedTasks();
+                        } else {
+                            fetchPendingTasks();
+                        }
+                    } else {
+                        alert('Error al eliminar la tarea');
+                    }
+                } catch (error) {
+                    console.error('Error al eliminar la tarea:', error);
+                }
+            };
+
+            // Inicializar la lista de tareas
+            fetchPendingTasks();
+            fetchCompletedTasks();
+        });
+    </script>
 </body>
 </html>
