@@ -10,11 +10,11 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background-color: #f9f9f9;
+            background-color: #e3f2fd;
             display: flex;
             justify-content: center;
             align-items: flex-start;
@@ -22,82 +22,95 @@
         }
 
         .container {
-            width: 800px;
+            width: 700px;
             max-width: 90%;
-            background-color: #fff;
-            padding: 20px;
-            margin-top: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            padding: 25px;
+            margin-top: 30px;
+            border-radius: 12px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
             text-align: center;
-            margin-bottom: 20px;
-            color: #333;
+            margin-bottom: 25px;
+            color: #37474f;
+            font-size: 28px;
         }
 
         /* Formulario de Tareas */
         .form-container {
-            background-color: #f4f4f4;
+            background-color: #f0f4f8;
             padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #42a5f5;
         }
 
         .form-container h2 {
-            color: #555;
-            margin-bottom: 15px;
+            color: #37474f;
+            margin-bottom: 20px;
         }
 
         input[type="text"], input[type="date"] {
             width: calc(100% - 20px);
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #cfd8dc;
+            border-radius: 6px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        input[type="text"]:focus, input[type="date"]:focus {
+            border-color: #42a5f5;
         }
 
         button {
-            padding: 10px 20px;
+            padding: 12px 25px;
             border: none;
-            border-radius: 5px;
-            background-color: #007bff;
+            border-radius: 6px;
+            background-color: #42a5f5;
             color: #fff;
             cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
+            font-size: 15px;
             transition: background-color 0.3s;
+            display: inline-block;
         }
 
         button:hover {
-            background-color: #0056b3;
+            background-color: #1e88e5;
         }
 
         /* Lista de Tareas */
         .task-list {
-            margin-top: 20px;
+            margin-top: 30px;
         }
 
         .task-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: #f0f0f0;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.05);
+            transition: box-shadow 0.3s;
+        }
+
+        .task-item:hover {
+            box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.1);
         }
 
         .task-item.completed {
-            background-color: #d4edda;
-            border-color: #c3e6cb;
+            background-color: #dcedc8;
+            border-left: 5px solid #66bb6a;
         }
 
         .task-title {
             font-size: 16px;
-            color: #333;
+            color: #455a64;
         }
 
         .task-actions {
@@ -106,18 +119,28 @@
         }
 
         .task-actions button {
-            padding: 5px 10px;
-            font-size: 14px;
+            padding: 8px 12px;
+            font-size: 13px;
+            background-color: #e57373;
+            border-radius: 5px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .task-actions button:hover {
+            background-color: #ef5350;
         }
 
         /* Sección de tareas completadas */
         .completed-section {
-            margin-top: 30px;
+            margin-top: 40px;
         }
 
         .completed-section h2 {
-            color: #555;
-            margin-bottom: 15px;
+            color: #37474f;
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -127,12 +150,12 @@
 
         <!-- Formulario para agregar tareas -->
         <div class="form-container">
-            <h2>Agregar Nueva Tarea</h2>
+            <h2>Nueva Tarea</h2>
             <form id="task-form">
                 <input type="text" id="task-title" placeholder="Título de la tarea" required>
                 <input type="text" id="task-description" placeholder="Descripción de la tarea" required>
                 <input type="date" id="task-date" required>
-                <button type="submit">Agregar Tarea</button>
+                <button type="submit">Añadir Tarea</button>
             </form>
         </div>
 
@@ -255,15 +278,14 @@
                         alert('Error al completar la tarea');
                     }
                 } catch (error) {
-                    console.error('Error al completar la tarea:', error);
+                    console.error('Error al completar tarea:', error);
                 }
             };
 
-            // Función para eliminar una tarea (pendiente o completada)
-            window.deleteTask = async (taskId, completed = false) => {
-                const endpoint = completed ? `/completadas/${taskId}` : `/tareas/${taskId}`;
+            // Función para eliminar una tarea
+            window.deleteTask = async (taskId, completed) => {
                 try {
-                    const response = await fetch(endpoint, {
+                    const response = await fetch(`/tareas/${taskId}`, {
                         method: 'DELETE',
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
@@ -277,11 +299,11 @@
                         alert('Error al eliminar la tarea');
                     }
                 } catch (error) {
-                    console.error('Error al eliminar la tarea:', error);
+                    console.error('Error al eliminar tarea:', error);
                 }
             };
 
-            // Inicializar la lista de tareas
+            // Inicializar tareas al cargar la página
             fetchPendingTasks();
             fetchCompletedTasks();
         });
